@@ -33,3 +33,4 @@ FEED_EXPORT_FIELDS = ['id', 'batch_id', 'source', 'neighborhood', 'created_at', 
 USE_GOOGLE_MAP_API = False
 MONGO_URI = 'mongodb://mongo:27017/'
 MONGO_DATABASE = 'items'
+USE_MONGO = False

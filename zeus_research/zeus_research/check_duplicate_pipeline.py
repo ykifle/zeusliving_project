@@ -8,15 +8,17 @@ class CheckDuplicatePipeline(object):
 
     collection_name = 'zeus_listings'
 
-    def __init__(self, mongo_uri, mongo_db):
+    def __init__(self, mongo_uri, mongo_db, enabled):
         self.mongo_uri = mongo_uri
         self.mongo_db = mongo_db
+        self.enabled = enabled
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(
-            mongo_uri=crawler.settings.get('MONGO_URI'),
-            mongo_db=crawler.settings.get('MONGO_DATABASE', 'items')
+            mongo_uri = crawler.settings.get('MONGO_URI'),
+            mongo_db = crawler.settings.get('MONGO_DATABASE', 'items'),
+            enabled = crawler.settings.get('USE_MONGO')
         )
 
     def open_spider(self, spider):
@@ -27,6 +29,9 @@ class CheckDuplicatePipeline(object):
         self.client.close()
 
     def process_item(self, item, spider):
+        if not self.enabled:
+            return item
+
         existing_listing = self.db[self.collection_name].find_one({
             'latitude': item.get('latitude'),
             'longitude': item.get('longitude'),

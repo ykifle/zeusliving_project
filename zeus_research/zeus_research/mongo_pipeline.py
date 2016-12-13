@@ -9,17 +9,19 @@ class MongoPipeline(object):
 
     collection_name = 'zeus_listings'
 
-    def __init__(self, mongo_uri, mongo_db, stats):
+    def __init__(self, mongo_uri, mongo_db, stats, enabled):
         self.mongo_uri = mongo_uri
         self.mongo_db = mongo_db
         self.stats = stats
+        self.enabled = enabled
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(
-            mongo_uri=crawler.settings.get('MONGO_URI'),
-            mongo_db=crawler.settings.get('MONGO_DATABASE', 'items'),
-            stats=crawler.stats
+            mongo_uri = crawler.settings.get('MONGO_URI'),
+            mongo_db = crawler.settings.get('MONGO_DATABASE', 'items'),
+            stats = crawler.stats,
+            enabled = crawler.settings.get('USE_MONGO')
         )
 
     def open_spider(self, spider):
@@ -30,6 +32,9 @@ class MongoPipeline(object):
         self.client.close()
 
     def process_item(self, item, spider):
+        if not self.enabled:
+            return item
+
         existing_listing = self.db[self.collection_name].find_one({
             'latitude': item.get('latitude'),
             'longitude': item.get('longitude'),
