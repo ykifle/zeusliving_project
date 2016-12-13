@@ -19,7 +19,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 ITEM_PIPELINES = {
-    'zeus_research.pipelines.AddressLookupPipeline': 300,
+    'zeus_research.check_duplicate_pipeline.CheckDuplicatePipeline': 300,
+    'zeus_research.pipelines.AddressLookupPipeline': 400,
+    'zeus_research.mongo_pipeline.MongoPipeline': 500,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -29,3 +31,5 @@ FEED_FORMAT = 'csv'
 FEED_EXPORT_FIELDS = ['id', 'batch_id', 'source', 'neighborhood', 'created_at', 'updated_at', 'post_created_at', 'post_updated_at', 'reviews_count', 'average_rating', 'source_rank', 'title', 'url', 'monthly_rent', 'bedrooms', 'bathrooms', 'sqft', 'address', 'latitude', 'longitude', 'dupe_of_id', 'city', 'province', 'country', 'property_type', 'post_first_seen_at', 'post_last_seen_at', 'scraper']
 
 USE_GOOGLE_MAP_API = False
+MONGO_URI = 'mongodb://mongo:27017/'
+MONGO_DATABASE = 'items'

@@ -13,7 +13,7 @@ class ZeusListingItem(scrapy.Item):
     reviews_count = scrapy.Field()
     average_rating = scrapy.Field()
     source_rank = scrapy.Field()
-    title = scrapy.Field()
+    title = scrapy.Field(serializer=lambda t: t.encode('utf-8') if t else None)
     url = scrapy.Field()
     monthly_rent = scrapy.Field()
     bedrooms = scrapy.Field()

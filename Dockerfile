@@ -9,6 +9,8 @@ RUN dnf update -y && dnf install -y \
 
 RUN pip install \
   jmespath \
+  pymongo \
+  geojson \
   redis \
   requests \
   Scrapy
