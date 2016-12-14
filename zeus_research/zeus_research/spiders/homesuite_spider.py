@@ -2,7 +2,7 @@
 
 import scrapy
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from scrapy.loader.processors import SelectJmes, MapCompose, TakeFirst, Compose
 from scrapy.loader import ItemLoader
 from zeus_research import items
@@ -12,9 +12,24 @@ class HomesuiteSpider(scrapy.Spider):
     name = "homesuite_listings"
     current_count = 0
 
+    def __init__(self, checkin=None, checkout=None, *args, **kwargs):
+        super(HomesuiteSpider, self).__init__(*args, **kwargs)
+        if checkin:
+            self.checkin = datetime.strptime(checkin.strip(), '%m-%d-%Y')
+        else:
+            self.checkin = datetime.utcnow() + timedelta(days=1)
+        if checkout:
+            self.checkout = datetime.strptime(checkout.strip(), '%m-%d-%Y')
+        else:
+            self.checkout = self.checkin + timedelta(days=30)
+        if self.checkout - self.checkin < timedelta(days=30):
+            self.checkout = self.checkin + timedelta(days=30)
+
     def start_requests(self):
         urls = [
-            'https://www.yourhomesuite.com/listings?city=san%20francisco&center_lat=37.7749295&center_lng=-122.4194155&move_in_date=2017-01-01&boundary_top_left_lat=37.818287608625354&boundary_top_left_lng=-122.47425374538483&boundary_bottom_right_lat=37.7315459486739&boundary_bottom_right_lng=-122.36451287722082&radius=2.9999859847017665&move_out_date=2017-01-31'
+            'https://www.yourhomesuite.com/listings?city=san%20francisco&center_lat=37.7749295&center_lng=-122.4194155&move_in_date={}&boundary_top_left_lat=37.818287608625354&boundary_top_left_lng=-122.47425374538483&boundary_bottom_right_lat=37.7315459486739&boundary_bottom_right_lng=-122.36451287722082&radius=2.9999859847017665&move_out_date={}'.format(
+                self.checkin.strftime('%Y-%m-%d'),
+                self.checkout.strftime('%Y-%m-%d'))
         ]
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
