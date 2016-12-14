@@ -53,7 +53,7 @@ class MongoPipeline(object):
             item['post_created_at'] = datetime.utcnow()
             self.stats.inc_value('new_listings_found')
         doc = dict(item)
-        doc['location'] = Point((item.get('latitude'), item.get('longitude')))
+        doc['location'] = Point((item.get('longitude'), item.get('latitude')))
         self.db[self.collection_name].insert(doc)
         self.stats.inc_value('listings_written_to_mongo')
         return item
