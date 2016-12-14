@@ -3,7 +3,8 @@
 import scrapy
 import re
 import json
-from datetime import datetime
+import urllib
+from datetime import datetime, timedelta
 from scrapy.loader.processors import SelectJmes, MapCompose, TakeFirst
 from scrapy.loader import ItemLoader
 from zeus_research import items
@@ -16,9 +17,34 @@ class AirbnbSpider(scrapy.Spider):
     current_count = 0
 
     def _next_pagination_url(self):
-        url = 'https://www.airbnb.com/search/search_results?checkin=01%2F01%2F2017&checkout=01%2F31%2F2017&guests=1&source=bb&ss_id=29xicnfv&location=San+Francisco%2C+CA&allow_override%5B%5D=&page={}'.format(self.current_page)
+        url = 'https://www.airbnb.com/search/search_results?checkin={}&checkout={}&guests={}&source=bb&ss_id=29xicnfv&location={}&allow_override%5B%5D=&page={}'.format(
+            urllib.quote_plus(self.checkin.strftime('%m/%d/%Y')),
+            urllib.quote_plus(self.checkout.strftime('%m/%d/%Y')),
+            self.guests,
+            urllib.quote_plus(self.location),
+            self.current_page)
         self.current_page += 1
         return url
+
+    def __init__(self, checkin=None, checkout=None, location=None, guests=1, *args, **kwargs):
+        super(AirbnbSpider, self).__init__(*args, **kwargs)
+        if checkin:
+            self.checkin = datetime.strptime(checkin.strip(), '%m-%d-%Y')
+        else:
+            self.checkin = datetime.utcnow() + timedelta(days=1)
+        if checkout:
+            self.checkout = datetime.strptime(checkout.strip(), '%m-%d-%Y')
+        else:
+            self.checkout = self.checkin + timedelta(days=30)
+        if location:
+            self.location = location
+        else:
+            location = 'San Francisco, CA'
+        if guests:
+            self.guests = int(guests)
+        if self.checkout - self.checkin < timedelta(days=30):
+            self.checkout = self.checkin + timedelta(days=30)
+
 
     def start_requests(self):
         urls = [
