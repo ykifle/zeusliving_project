@@ -8,17 +8,19 @@ class CheckDuplicatePipeline(object):
 
     collection_name = 'zeus_listings'
 
-    def __init__(self, mongo_uri, mongo_db, enabled):
+    def __init__(self, mongo_uri, mongo_db, enabled, ignore_updates):
         self.mongo_uri = mongo_uri
         self.mongo_db = mongo_db
         self.enabled = enabled
+        self.ignore_updates = ignore_updates
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(
             mongo_uri = crawler.settings.get('MONGO_URI'),
             mongo_db = crawler.settings.get('MONGO_DATABASE', 'items'),
-            enabled = crawler.settings.get('USE_MONGO')
+            enabled = crawler.settings.get('USE_MONGO'),
+            ignore_updates = crawler.settings.get('IGNORE_UPDATES')
         )
 
     def open_spider(self, spider):
@@ -40,7 +42,7 @@ class CheckDuplicatePipeline(object):
             'province': item.get('province'),
             'country': item.get('country')
         })
-        if existing_listing and not self._has_diffs(existing_listing, item):
+        if existing_listing and not self.ignore_updates and not self._has_diffs(existing_listing, item):
             raise DropItem('Skipping duplicate listing {}'.format(item.get('title').encode('utf-8')))
         return item
 
